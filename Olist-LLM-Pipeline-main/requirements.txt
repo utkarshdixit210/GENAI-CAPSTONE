@@ -1,0 +1,27 @@
+# GEN_AI Capstone — Olist Continuous Data Quality Pipeline
+
+# Core orchestration
+langgraph>=0.2.0
+langchain>=0.3.0
+
+# LLM providers — install the one you use
+anthropic>=0.40.0           # Claude (recommended)
+langchain-openai>=0.2.0     # GPT-4o
+langchain-groq>=0.2.0       # Llama via Groq
+
+# Snowflake (optional — pipeline works without it via USE_LOCAL_CSV=true)
+snowflake-connector-python>=3.6.0
+snowflake-sqlalchemy>=1.5.0
+
+# Data
+pandas>=2.0.0
+numpy>=1.26.0
+
+# Dashboard
+streamlit>=1.35.0
+plotly>=5.20.0
+
+# Utilities
+python-dotenv>=1.0.0
+loguru>=0.7.0
+faker>=24.0.0

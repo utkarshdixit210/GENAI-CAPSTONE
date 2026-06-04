@@ -1,0 +1,72 @@
+name: Olist LLM Pipeline CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Code Quality & Unit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      # If you needed a local DB, you could add it here. 
+      # Snowflake is remote, so we just need connectivity.
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/checkout@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock ruff
+
+      - name: Lint with Ruff
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          ruff check .
+
+      - name: Create .env for CI
+        run: |
+          echo "LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}" >> .env
+          echo "LLM_MODEL=${{ secrets.LLM_MODEL }}" >> .env
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+          echo "SNOWFLAKE_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT }}" >> .env
+          echo "SNOWFLAKE_USER=${{ secrets.SNOWFLAKE_USER }}" >> .env
+          echo "SNOWFLAKE_PASSWORD=${{ secrets.SNOWFLAKE_PASSWORD }}" >> .env
+          echo "SNOWFLAKE_WAREHOUSE=${{ secrets.SNOWFLAKE_WAREHOUSE }}" >> .env
+          echo "SNOWFLAKE_DATABASE=${{ secrets.SNOWFLAKE_DATABASE }}" >> .env
+          echo "SNOWFLAKE_SCHEMA=${{ secrets.SNOWFLAKE_SCHEMA }}" >> .env
+          echo "SNOWFLAKE_ROLE=${{ secrets.SNOWFLAKE_ROLE }}" >> .env
+
+      - name: Run Tests
+        run: |
+          # Run tests. We skip integration tests that require real Snowflake 
+          # unless secrets are provided in the repo settings.
+          pytest tests/ -v
+
+  deploy:
+    name: Deployment
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Message
+        run: |
+          echo "CI Passed. Ready for deployment to production environment (e.g. Streamlit Cloud, AWS, etc.)"
+          # Example for Streamlit Cloud (Auto-deploy on push is usually preferred)
+          # Example for AWS:
+          # aws deploy create-deployment ...
