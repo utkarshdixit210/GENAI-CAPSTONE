@@ -51,6 +51,10 @@ class PipelineConfig:
     # Paths
     DATA_DIR              = os.getenv("DATA_DIR",     "data")
     OUTPUTS_DIR           = os.getenv("OUTPUTS_DIR",  "outputs")
+    
+    import pathlib
+    ROOT_DIR              = pathlib.Path(__file__).parent.parent.resolve()
+    DB_PATH               = str(ROOT_DIR / "metadata" / "data_ops.db")
 
     # Set to "true" to run without Snowflake (uses local CSVs)
     USE_LOCAL_CSV         = os.getenv("USE_LOCAL_CSV", "true").lower() == "true"

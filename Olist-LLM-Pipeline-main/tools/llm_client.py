@@ -8,13 +8,13 @@ import os
 import sqlite3
 import datetime
 from loguru import logger
-from config.settings import LLMConfig
+from config.settings import LLMConfig, PipelineConfig
 
-DB_PATH = "metadata/data_ops.db"
+DB_PATH = PipelineConfig.DB_PATH
 
 # ── B2/B3/B4 SQLite Tables Setup ──────────────────────────────────────────────
 def init_db():
-    os.makedirs("metadata", exist_ok=True)
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     

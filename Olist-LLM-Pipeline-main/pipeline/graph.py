@@ -29,6 +29,7 @@ from agents.nodes import (
     lineage_tracker, audit_writer, alert, heal_agent,
 )
 from loguru import logger
+from config.settings import PipelineConfig
 
 
 def route(state: AgentState) -> str:
@@ -49,7 +50,7 @@ def route_after_heal(state: AgentState) -> str:
 
 def acquire_lock(dataset: str, node: str) -> bool:
     import sqlite3
-    conn = sqlite3.connect("metadata/data_ops.db", timeout=30.0)
+    conn = sqlite3.connect(PipelineConfig.DB_PATH, timeout=30.0)
     cur = conn.cursor()
     try:
         # Check if another node has locked this dataset
@@ -75,7 +76,7 @@ def acquire_lock(dataset: str, node: str) -> bool:
 
 def release_lock(dataset: str, node: str):
     import sqlite3
-    conn = sqlite3.connect("metadata/data_ops.db", timeout=30.0)
+    conn = sqlite3.connect(PipelineConfig.DB_PATH, timeout=30.0)
     cur = conn.cursor()
     try:
         cur.execute("""
@@ -91,7 +92,7 @@ def release_lock(dataset: str, node: str):
 
 def clear_dataset_locks(dataset: str):
     import sqlite3
-    conn = sqlite3.connect("metadata/data_ops.db", timeout=30.0)
+    conn = sqlite3.connect(PipelineConfig.DB_PATH, timeout=30.0)
     cur = conn.cursor()
     try:
         cur.execute("UPDATE concurrency_locks SET lock_status = 'resolved' WHERE dataset = ?", (dataset,))

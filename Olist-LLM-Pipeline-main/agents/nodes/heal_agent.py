@@ -75,7 +75,7 @@ def wait_for_human_approval(sql_query: str, dataset: str, node: str) -> bool:
     run_id = os.environ.get("PIPELINE_RUN_ID", "local_run")
     
     # 1. Insert request into SQLite
-    conn = sqlite3.connect("metadata/data_ops.db")
+    conn = sqlite3.connect(PipelineConfig.DB_PATH, timeout=30.0)
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO pending_approvals (run_id, dataset, node, sql_query, status)
@@ -92,7 +92,7 @@ def wait_for_human_approval(sql_query: str, dataset: str, node: str) -> bool:
     timeout_sec = 300  # 5 minutes timeout
     start_time = time.time()
     while time.time() - start_time < timeout_sec:
-        conn = sqlite3.connect("metadata/data_ops.db")
+        conn = sqlite3.connect(PipelineConfig.DB_PATH, timeout=30.0)
         cur = conn.cursor()
         cur.execute("SELECT status FROM pending_approvals WHERE run_id = ? AND dataset = ? AND node = ? ORDER BY id DESC LIMIT 1",
                     (run_id, dataset, node))

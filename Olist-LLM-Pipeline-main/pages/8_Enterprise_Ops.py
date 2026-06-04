@@ -6,12 +6,13 @@ import time
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from config.settings import PipelineConfig
 
 st.set_page_config(page_title="Enterprise Data Ops", page_icon="🛡️", layout="wide")
 st.markdown("# 🛡️ Enterprise Data Engineering Operations")
 st.caption("Agent Observability, Token Budgets, Human-in-the-Loop Approvals, & Concurrency Locks")
 
-DB_PATH = "metadata/data_ops.db"
+DB_PATH = PipelineConfig.DB_PATH
 
 def get_db_connection():
     return sqlite3.connect(DB_PATH)
