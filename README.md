@@ -1,5 +1,5 @@
 # 🔮 Olist Agentic Data Engineering Operations System
- Deployed Link : https://team8-vortex.streamlit.app/
+
 > **Autonomous Self-Healing Data Quality Pipeline (Bronze → Silver → Gold) on Snowflake with Central Enterprise Spend, Concurrency Locks, and Observability Controls.**
 
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)]()
@@ -27,7 +27,7 @@ This system orchestrates an end-to-end Snowflake data engineering pipeline for B
 
 ## 🏛️ System Architecture Blueprint
 
-For detailed system component descriptions and a full diagram workflow matching corporate standards, view [**`specifications.md`**](specifications.md) and [**`architecture_diagram.md`**](architecture_diagram.md).
+For detailed system component descriptions and a full diagram workflow matching corporate standards, view [**`specifications.md`**](Olist-LLM-Pipeline-main/specifications.md) and [**`architecture_diagram.md`**](Olist-LLM-Pipeline-main/architecture_diagram.md).
 
 ```
 Generate → Bronze (LLM) → Silver (LLM) → Gold (LLM) → Snowflake → Dashboard
