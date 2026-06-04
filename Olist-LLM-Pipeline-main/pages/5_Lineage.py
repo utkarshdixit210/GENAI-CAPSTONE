@@ -3,12 +3,14 @@ import json
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from config.settings import PipelineConfig
 
 st.set_page_config(page_title="Lineage", page_icon="🔗", layout="wide")
 st.markdown("# 🔗 Data Lineage Visualization")
 st.caption("Trace data flow from Bronze → Silver → Gold across pipeline nodes")
 
-hist = json.load(open("metadata/batch_history.json")) if Path("metadata/batch_history.json").exists() else []
+history_file = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
+hist = json.load(open(history_file)) if history_file.exists() else []
 if not hist: st.info("No data yet."); st.stop()
 
 opts = [f"Batch #{i+1} — {b['batch_id']} ({b['status']})" for i,b in enumerate(hist)]

@@ -6,13 +6,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 from dotenv import load_dotenv
+from config.settings import PipelineConfig
 load_dotenv()
 
 st.set_page_config(page_title="Governance & PII", page_icon="🔐", layout="wide")
 st.markdown("# 🔐 Governance & PII Monitoring")
 st.caption("PII detection, masking audit, data classification, governance compliance")
 
-hist = json.load(open("metadata/batch_history.json")) if Path("metadata/batch_history.json").exists() else []
+history_file = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
+hist = json.load(open(history_file)) if history_file.exists() else []
 if not hist: st.info("No data yet."); st.stop()
 
 opts = [f"Batch #{i+1} — {b['batch_id']} ({b['status']})" for i,b in enumerate(hist)]

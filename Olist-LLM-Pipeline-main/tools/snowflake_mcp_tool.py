@@ -24,13 +24,16 @@ class SnowflakeMCPTool:
     def __init__(self):
         self.conn      = None
         self.use_local = PipelineConfig.USE_LOCAL_CSV
+        self.data_dir = str(PipelineConfig.ROOT_DIR / PipelineConfig.DATA_DIR)
+        self.outputs_dir = str(PipelineConfig.ROOT_DIR / PipelineConfig.OUTPUTS_DIR)
+        self.metadata_dir = str(PipelineConfig.ROOT_DIR / "metadata")
         if not self.use_local:
             self._connect()
         else:
             logger.info("MCP | LOCAL CSV mode — no Snowflake required")
             for layer in ["bronze", "silver", "gold"]:
-                os.makedirs(f"{PipelineConfig.OUTPUTS_DIR}/{layer}", exist_ok=True)
-            os.makedirs("metadata", exist_ok=True)
+                os.makedirs(f"{self.outputs_dir}/{layer}", exist_ok=True)
+            os.makedirs(self.metadata_dir, exist_ok=True)
 
     # ── Connection ────────────────────────────────────────────────
     def _connect(self):
@@ -92,7 +95,7 @@ class SnowflakeMCPTool:
             df    = params["df"]
             table = params["table"]
             layer = params.get("layer", "silver")
-            path  = f"{PipelineConfig.OUTPUTS_DIR}/{layer}/{table}.csv"
+            path  = f"{self.outputs_dir}/{layer}/{table}.csv"
             df.to_csv(path, index=False)
             logger.success(f"MCP | Written {len(df):,} rows → {path}")
             return {"status": "written", "path": path, "rows": len(df)}
@@ -100,7 +103,7 @@ class SnowflakeMCPTool:
         elif tool_name == "snowflake_read_table":
             table = params["table"]
             layer = params.get("layer", "silver")
-            path  = f"{PipelineConfig.OUTPUTS_DIR}/{layer}/{table}.csv"
+            path  = f"{self.outputs_dir}/{layer}/{table}.csv"
             if not Path(path).exists():
                 raise FileNotFoundError(f"Table '{table}' not found at {path}")
             df = pd.read_csv(path)
@@ -110,7 +113,7 @@ class SnowflakeMCPTool:
         elif tool_name == "snowflake_append_json":
             file    = params["file"]
             record  = params["record"]
-            path    = f"metadata/{file}.json"
+            path    = f"{self.metadata_dir}/{file}.json"
             records = []
             if Path(path).exists():
                 with open(path) as f:
@@ -127,16 +130,16 @@ class SnowflakeMCPTool:
 
     def _load_csv(self, table_name: str) -> pd.DataFrame:
         csv_map = {
-            "RAW_OLIST_CUSTOMERS": f"{PipelineConfig.DATA_DIR}/olist_customers_dataset.csv",
-            "RAW_OLIST_ORDERS":    f"{PipelineConfig.DATA_DIR}/olist_orders_dataset.csv",
-            "RAW_OLIST_PAYMENTS":  f"{PipelineConfig.DATA_DIR}/olist_order_payments_dataset.csv",
-            "RAW_OLIST_PRODUCTS":  f"{PipelineConfig.DATA_DIR}/olist_products_dataset.csv",
+            "RAW_OLIST_CUSTOMERS": f"{self.data_dir}/olist_customers_dataset.csv",
+            "RAW_OLIST_ORDERS":    f"{self.data_dir}/olist_orders_dataset.csv",
+            "RAW_OLIST_PAYMENTS":  f"{self.data_dir}/olist_order_payments_dataset.csv",
+            "RAW_OLIST_PRODUCTS":  f"{self.data_dir}/olist_products_dataset.csv",
         }
         path = csv_map.get(table_name)
         if path and Path(path).exists():
             return pd.read_csv(path)
         for layer in ["silver", "bronze", "gold"]:
-            p = f"{PipelineConfig.OUTPUTS_DIR}/{layer}/{table_name}.csv"
+            p = f"{self.outputs_dir}/{layer}/{table_name}.csv"
             if Path(p).exists():
                 return pd.read_csv(p)
         raise FileNotFoundError(

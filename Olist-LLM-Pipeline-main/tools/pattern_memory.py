@@ -2,7 +2,9 @@ import os
 import chromadb
 from loguru import logger
 
-CHROMA_PATH = "metadata/chroma_db"
+from config.settings import PipelineConfig
+
+CHROMA_PATH = str(PipelineConfig.ROOT_DIR / "metadata" / "chroma_db")
 
 class PatternMemory:
     def __init__(self):

@@ -3,6 +3,8 @@ import os, sys, subprocess, json, time
 import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
+from config.settings import PipelineConfig
+from pipeline.batch_state import read_batch_state, write_pipeline_control
 load_dotenv()
 
 st.set_page_config(page_title="Pipeline Control", page_icon="🎛️", layout="wide")
@@ -21,10 +23,14 @@ with c3:
 st.divider()
 col1, col2, col3 = st.columns(3)
 
-PROJECT_DIR = Path(__file__).parent.parent.resolve()
+PROJECT_DIR = PipelineConfig.ROOT_DIR
+
+state = read_batch_state()
+status_val = state.get("status", "idle")
+is_running = status_val == "running"
 
 with col1:
-    if st.button("📊 Generate Data Only", use_container_width=True, type="secondary"):
+    if st.button("📊 Generate Data Only", use_container_width=True, type="secondary", disabled=is_running):
         with st.spinner("Generating data..."):
             result = subprocess.run([sys.executable, str(PROJECT_DIR / "generate_data.py"), "--rows", str(rows)],
                                      capture_output=True, text=True, cwd=str(PROJECT_DIR), timeout=60)
@@ -35,19 +41,23 @@ with col1:
                 st.error(f"❌ Error: {result.stderr[-300:]}")
 
 with col2:
-    if st.button("🚀 Run Full Pipeline", use_container_width=True, type="primary"):
-        flag = "--once" if mode == "Single Batch" else "--loop"
-        with st.status("Running pipeline...", expanded=True) as status:
-            st.write(f"Mode: {mode} | Rows: {rows}")
-            result = subprocess.run(
+    if is_running:
+        if st.button("⏹ Stop Pipeline", use_container_width=True, type="secondary"):
+            write_pipeline_control(running=False)
+            st.warning("⏹ Stop signal sent! The pipeline will halt after the current node finishes.")
+            time.sleep(1.5)
+            st.rerun()
+    else:
+        if st.button("🚀 Run Full Pipeline", use_container_width=True, type="primary"):
+            flag = "--once" if mode == "Single Batch" else "--loop"
+            write_pipeline_control(running=True, batch_interval_sec=interval, dataset="all")
+            subprocess.Popen(
                 [sys.executable, str(PROJECT_DIR / "run_continuous.py"), flag, "--rows", str(rows), "--interval", str(interval)],
-                capture_output=True, text=True, cwd=str(PROJECT_DIR), timeout=300)
-            if result.returncode == 0:
-                status.update(label="✅ Pipeline Complete!", state="complete")
-                st.code(result.stdout[-1500:], language="text")
-            else:
-                status.update(label="❌ Pipeline Failed", state="error")
-                st.code(result.stderr[-500:], language="text")
+                cwd=str(PROJECT_DIR)
+            )
+            st.success("🚀 Pipeline started in the background! Navigate to the other pages to approve queries and view logs.")
+            time.sleep(1.5)
+            st.rerun()
 
 with col3:
     if st.button("🔄 Refresh Dashboard", use_container_width=True):
@@ -69,7 +79,7 @@ c3.metric("Role", os.getenv("SNOWFLAKE_ROLE","—"))
 # ── Recent Batches ──────────────────────────────────────────────
 st.divider()
 st.markdown("### 📦 Recent Batches")
-p = Path("metadata/batch_history.json")
+p = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
 if p.exists():
     hist = json.load(open(p))
     import pandas as pd

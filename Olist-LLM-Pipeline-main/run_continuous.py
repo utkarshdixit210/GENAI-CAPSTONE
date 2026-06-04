@@ -390,8 +390,10 @@ def run_one_batch(dataset: str, n_rows: int, batch_id: str, batch_num: int) -> d
     print_results(final, dur)
 
     # Save to batch history
-    os.makedirs("metadata", exist_ok=True)
-    hist_path = "metadata/batch_history.json"
+    from config.settings import PipelineConfig
+    metadata_dir = PipelineConfig.ROOT_DIR / "metadata"
+    os.makedirs(metadata_dir, exist_ok=True)
+    hist_path = str(metadata_dir / "batch_history.json")
     history = []
     if Path(hist_path).exists():
         try:

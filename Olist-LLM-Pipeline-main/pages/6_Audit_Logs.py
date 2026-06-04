@@ -4,12 +4,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
+from config.settings import PipelineConfig
 
 st.set_page_config(page_title="Audit & Logs", page_icon="📋", layout="wide")
 st.markdown("# 📋 Audit & Logs Panel")
 st.caption("Run history, heal logs, error summaries, full observability")
 
-hist = json.load(open("metadata/batch_history.json")) if Path("metadata/batch_history.json").exists() else []
+history_file = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
+hist = json.load(open(history_file)) if history_file.exists() else []
 if not hist: st.info("No data yet."); st.stop()
 
 # ── Run History Table ───────────────────────────────────────────
@@ -80,7 +82,7 @@ if all_heals:
 # ── Log Files ───────────────────────────────────────────────────
 st.divider()
 st.markdown("### 📄 Audit Report Files")
-log_dir = Path("logs")
+log_dir = Path(PipelineConfig.ROOT_DIR) / "logs"
 if log_dir.exists():
     logs = sorted(log_dir.glob("audit_*.txt"), reverse=True)[:10]
     if logs:

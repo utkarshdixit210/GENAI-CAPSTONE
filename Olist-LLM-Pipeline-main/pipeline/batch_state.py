@@ -11,11 +11,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-BATCH_STATE_FILE = "metadata/batch_state.json"
-BATCH_LOG_FILE   = "metadata/batch_log.json"
-LIVE_LOG_FILE    = "metadata/live_log.json"
+from config.settings import PipelineConfig
 
-os.makedirs("metadata", exist_ok=True)
+ROOT_METADATA_DIR = PipelineConfig.ROOT_DIR / "metadata"
+os.makedirs(ROOT_METADATA_DIR, exist_ok=True)
+
+BATCH_STATE_FILE = str(ROOT_METADATA_DIR / "batch_state.json")
+BATCH_LOG_FILE   = str(ROOT_METADATA_DIR / "batch_log.json")
+LIVE_LOG_FILE    = str(ROOT_METADATA_DIR / "live_log.json")
+PIPELINE_CONTROL_FILE = str(ROOT_METADATA_DIR / "pipeline_control.json")
 
 
 def _read_json(path: str, default):
@@ -98,16 +102,16 @@ def push_live_log(message: str, level: str = "INFO", node: str = "", batch_id: i
 
 def write_pipeline_control(running: bool, batch_interval_sec: int = 15, dataset: str = "all"):
     """Dashboard writes this; pipeline runner reads it."""
-    ctrl = _read_json("metadata/pipeline_control.json", {})
+    ctrl = _read_json(PIPELINE_CONTROL_FILE, {})
     ctrl["running"]             = running
     ctrl["batch_interval_sec"]  = batch_interval_sec
     ctrl["dataset"]             = dataset
     ctrl["updated_at"]          = datetime.utcnow().isoformat()
-    _write_json("metadata/pipeline_control.json", ctrl)
+    _write_json(PIPELINE_CONTROL_FILE, ctrl)
 
 
 def read_pipeline_control() -> dict:
-    return _read_json("metadata/pipeline_control.json", {
+    return _read_json(PIPELINE_CONTROL_FILE, {
         "running": False,
         "batch_interval_sec": 15,
         "dataset": "all",
@@ -137,6 +141,6 @@ def read_live_log() -> list:
 def reset_state():
     """Clear all state files — called on fresh start."""
     for f in [BATCH_STATE_FILE, BATCH_LOG_FILE, LIVE_LOG_FILE,
-              "metadata/pipeline_control.json"]:
+              PIPELINE_CONTROL_FILE]:
         if Path(f).exists():
             os.remove(f)

@@ -9,6 +9,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 from dotenv import load_dotenv
+from config.settings import PipelineConfig
 load_dotenv()
 
 st.set_page_config(page_title="Olist Pipeline", page_icon="🔮", layout="wide", initial_sidebar_state="expanded")
@@ -114,7 +115,7 @@ def qry(sql):
     except: return pd.DataFrame()
 
 def load_hist():
-    p=Path("metadata/batch_history.json")
+    p=Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
     return json.load(open(p)) if p.exists() else []
 
 # ── Data ────────────────────────────────────────────────────────

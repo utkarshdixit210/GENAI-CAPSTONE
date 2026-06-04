@@ -4,12 +4,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
+from config.settings import PipelineConfig
 
 st.set_page_config(page_title="Schema Evolution", page_icon="🌊", layout="wide")
 st.markdown("# 🌊 Schema Evolution Tracker")
 st.caption("Track schema changes, column additions, type modifications across batches")
 
-hist = json.load(open("metadata/batch_history.json")) if Path("metadata/batch_history.json").exists() else []
+history_file = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
+hist = json.load(open(history_file)) if history_file.exists() else []
 if not hist: st.info("No data yet."); st.stop()
 
 # ── Batch Selector ──────────────────────────────────────────────

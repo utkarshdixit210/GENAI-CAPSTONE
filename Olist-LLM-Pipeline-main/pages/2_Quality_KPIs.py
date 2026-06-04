@@ -6,13 +6,15 @@ import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
 from dotenv import load_dotenv
+from config.settings import PipelineConfig
 load_dotenv()
 
 st.set_page_config(page_title="Quality KPIs", page_icon="📊", layout="wide")
 st.markdown("# 📊 Data Quality KPIs")
 st.caption("Validation pass rates, null analysis, healing success, quarantine metrics")
 
-hist = json.load(open("metadata/batch_history.json")) if Path("metadata/batch_history.json").exists() else []
+history_file = Path(PipelineConfig.ROOT_DIR) / "metadata" / "batch_history.json"
+hist = json.load(open(history_file)) if history_file.exists() else []
 if not hist:
     st.info("No data yet. Run the pipeline first."); st.stop()
 
