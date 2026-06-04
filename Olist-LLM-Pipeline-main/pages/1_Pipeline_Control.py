@@ -1,5 +1,5 @@
 """Page 1 — Pipeline Control Panel"""
-import os, subprocess, json, time
+import os, sys, subprocess, json, time
 import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
@@ -26,7 +26,7 @@ PROJECT_DIR = Path(__file__).parent.parent.resolve()
 with col1:
     if st.button("📊 Generate Data Only", use_container_width=True, type="secondary"):
         with st.spinner("Generating data..."):
-            result = subprocess.run(["python3", str(PROJECT_DIR / "generate_data.py"), "--rows", str(rows)],
+            result = subprocess.run([sys.executable, str(PROJECT_DIR / "generate_data.py"), "--rows", str(rows)],
                                      capture_output=True, text=True, cwd=str(PROJECT_DIR), timeout=60)
             if result.returncode == 0:
                 st.success("✅ Data generated and pushed to Snowflake!")
@@ -40,7 +40,7 @@ with col2:
         with st.status("Running pipeline...", expanded=True) as status:
             st.write(f"Mode: {mode} | Rows: {rows}")
             result = subprocess.run(
-                ["python3", str(PROJECT_DIR / "run_continuous.py"), flag, "--rows", str(rows), "--interval", str(interval)],
+                [sys.executable, str(PROJECT_DIR / "run_continuous.py"), flag, "--rows", str(rows), "--interval", str(interval)],
                 capture_output=True, text=True, cwd=str(PROJECT_DIR), timeout=300)
             if result.returncode == 0:
                 status.update(label="✅ Pipeline Complete!", state="complete")
